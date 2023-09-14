@@ -1,3 +1,4 @@
+import { fastifyCors } from '@fastify/cors';
 import { fastify } from 'fastify';
 import { createTranscriptionRoute } from './routes/create-transcription';
 import { generateAiCompletionRoute } from './routes/generate-ai-completion';
@@ -7,6 +8,9 @@ import { uploadVideoRoute } from './routes/upload-video';
 const app = fastify()
 
 // todas as funções que estão dentro do app.registrer precisam ser assincronas - exigencia do fasfity
+app.register(fastifyCors, {
+  origin: '*',
+})
 app.register(getAllPromptsRoute)
 app.register(uploadVideoRoute)
 app.register(createTranscriptionRoute)
