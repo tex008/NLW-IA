@@ -1,5 +1,6 @@
 import { Github, Wand2 } from "lucide-react";
-import VideoInputForm from "./components/ui/VideoInputForm";
+import { PromptSelect } from "./components/PromptSelect";
+import VideoInputForm from "./components/VideoInputForm";
 import { Button } from "./components/ui/button";
 import { Label } from "./components/ui/label";
 import {
@@ -62,17 +63,7 @@ export default function App() {
             <form className="space-y-6">
               <div className="space-y-2">
                 <Label>Prompt</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um prompt..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="title">Título do Youtube</SelectItem>
-                    <SelectItem value="description">
-                      Descrição do Youtube
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <PromptSelect />
               </div>
 
               <div className="space-y-2">

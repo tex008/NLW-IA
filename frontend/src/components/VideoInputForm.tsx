@@ -3,10 +3,10 @@ import { getFFmpeg } from "@/lib/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
 import { FileVideo, Upload } from "lucide-react";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
-import { Button } from "./button";
-import { Label } from "./label";
-import { Separator } from "./separator";
-import { Textarea } from "./textarea";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Separator } from "./ui/separator";
+import { Textarea } from "./ui/textarea";
 
 type Status =
   | "waiting"
@@ -16,12 +16,12 @@ type Status =
   | "success"
   | "error";
 
-enum statusMessages  {
+enum statusMessages {
   CONVERTING = "Convertendo...",
   GENERATING = "Transcrevendo...",
   UPLOADING = "Carregando...",
   SUCCESS = "Sucesso!",
-  ERROR = "Algo deu Errado. Tente novamente!"
+  ERROR = "Algo deu Errado. Tente novamente!",
 }
 
 export default function VideoInputForm() {
@@ -93,31 +93,29 @@ export default function VideoInputForm() {
     setStatus("converting");
 
     try {
+      // converter o video em audio - a lib da openai só suporta 25mb, em video não é nada mas em áudio é MUITA coisa. E ainda da pra diminuir a qualidade do audio para ter mais espaço. E também acelera o upload.
+      // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
+      // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
+      const audioFile = await convertVideoToAudio(videoFile);
 
-    // converter o video em audio - a lib da openai só suporta 25mb, em video não é nada mas em áudio é MUITA coisa. E ainda da pra diminuir a qualidade do audio para ter mais espaço. E também acelera o upload.
-    // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
-    // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
-    const audioFile = await convertVideoToAudio(videoFile);
+      // é necessária a criação de um FormData pois é o formato que a api está esperando para fazer o upload
+      const data = new FormData();
+      data.append("file", audioFile);
 
-    // é necessária a criação de um FormData pois é o formato que a api está esperando para fazer o upload
-    const data = new FormData();
-    data.append("file", audioFile);
+      //  seta o status para uploading
+      setStatus("uploading");
 
-    //  seta o status para uploading
-    setStatus("uploading");
+      //upload do vídeo
+      const response = await api.post("videos/uploadVideo", data);
 
-    //upload do vídeo
-    const response = await api.post("videos/uploadVideo", data);
+      //transcrição do vídeo
+      const videoId = response.data.video.id;
 
-    //transcrição do vídeo
-    const videoId = response.data.video.id;
+      // seta o status para generating
+      setStatus("generating");
 
-    // seta o status para generating
-    setStatus("generating");
-
-    
       await api.post(`videos/${videoId}/transcription`, {
-      prompt,
+        prompt,
       });
 
       // seta o estado para success
@@ -174,18 +172,20 @@ export default function VideoInputForm() {
         />
       </div>
 
-      <Button 
-        data-success={status === 'success'}
-        data-error={status === 'error'}
+      <Button
+        data-success={status === "success"}
+        data-error={status === "error"}
         disabled={status !== "waiting"}
         className="w-full data-[success=true]:bg-emerald-400 data-[error=true]:bg-red-500"
-        >
+      >
         {status === "waiting" ? (
           <>
             Carregar vídeo
             <Upload className="w-4 h-4 ml-2" />
           </>
-        ) : statusMessages[status.toUpperCase() as keyof typeof statusMessages]}
+        ) : (
+          statusMessages[status.toUpperCase() as keyof typeof statusMessages]
+        )}
       </Button>
     </form>
   );
