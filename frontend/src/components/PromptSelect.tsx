@@ -1,3 +1,5 @@
+import { api } from "@/lib/axios";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -6,15 +8,33 @@ import {
   SelectValue,
 } from "./ui/select";
 
+type Prompt =  {
+  id: string;
+  title: string;
+  template: string;
+}
+
 export function PromptSelect() {
+  const [prompts, setPrompts] = useState<Prompt[] | null>(null)
+
+  useEffect(() => {
+    api.get('/prompts').then((response) => {
+      console.log(response.data)
+      setPrompts(response.data)
+    })
+  }, [])
+
   return (
     <Select>
       <SelectTrigger>
         <SelectValue placeholder="Selecione um prompt..." />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="title">Título do Youtube</SelectItem>
-        <SelectItem value="description">Descrição do Youtube</SelectItem>
+        {prompts?.map((prompt) => (
+          <SelectItem key={prompt.id} value={prompt.id}>
+            {prompt.title}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
