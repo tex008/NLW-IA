@@ -21,7 +21,7 @@ enum statusMessages  {
   GENERATING = "Transcrevendo...",
   UPLOADING = "Carregando...",
   SUCCESS = "Sucesso!",
-  ERROR = "Algo deu Errado!"
+  ERROR = "Algo deu Errado. Tente novamente!"
 }
 
 export default function VideoInputForm() {
@@ -92,6 +92,8 @@ export default function VideoInputForm() {
     // seta o status para converting
     setStatus("converting");
 
+    try {
+
     // converter o video em audio - a lib da openai só suporta 25mb, em video não é nada mas em áudio é MUITA coisa. E ainda da pra diminuir a qualidade do audio para ter mais espaço. E também acelera o upload.
     // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
     // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
@@ -113,7 +115,7 @@ export default function VideoInputForm() {
     // seta o status para generating
     setStatus("generating");
 
-    try {
+    
       await api.post(`videos/${videoId}/transcription`, {
       prompt,
       });
