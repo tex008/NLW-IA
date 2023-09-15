@@ -1,5 +1,8 @@
+import { getFFmpeg } from "@/lib/ffmpeg";
+import { fetchFile } from '@ffmpeg/util';
 import { FileVideo, Upload } from "lucide-react";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { fileURLToPath } from "url";
 import { Button } from "./button";
 import { Label } from "./label";
 import { Separator } from "./separator";
@@ -20,7 +23,50 @@ export default function VideoInputForm() {
     setVideoFile(selectedFile)
   }
 
-  function handleUploadVideo(event: FormEvent<HTMLFormElement> ) {
+  async function convertVideoToAudio(video: File) {
+    console.log("Convert started...")
+
+    // carrega o ffmpeg
+    const ffmpeg = await getFFmpeg()
+
+    // coloca um arquivo dentro do contexto do ffmpeg. Com o o web assembly, é como se o ffmpeg não estivesse rodando na máquina local, é como se ele estivesse rodando num container, num ambiente isolado... então ele não tem acesso aos arquivos na aplicação, por isso a necessidade de um write File no ffmpeg
+    await ffmpeg.writeFile("input.mp4", await fetchFile(video))
+
+    // usado para ouvir os logs e desbugar caso necessário
+    // ffmpeg.on('log', (log) => {
+    //   console.log(log)
+    // })
+
+    // escuta o progresso do ffmpg
+    ffmpeg.on('progress', (progress) => {
+      console.log('Convert progress:' + Math.round(progress.progress * 100))
+    })
+
+    await ffmpeg.exec([
+      '-i',
+      'input.mp4',
+      '-map',
+      '0:a',
+      '-b:a',
+      '20k',
+      '-acodec',
+      'libmp3lame',
+      'output.mp3'
+    ])
+
+    const data = await ffmpeg.readFile('output.mp3')
+
+    // conversao de FileData em um FIle do JS
+    const audioFileBlob = new Blob([data], {type: "audio/mpeg"})
+    const audioFile = new File([audioFileBlob], "audio.mp3", {
+      type: "audio/mpeg"
+    })
+    console.log('Convert finished')
+    
+    return audioFile
+  }
+
+  async function handleUploadVideo(event: FormEvent<HTMLFormElement> ) {
     event.preventDefault();
     
     const prompt = promptInputRef.current?.value
@@ -30,6 +76,8 @@ export default function VideoInputForm() {
     // converter o video em audio - a lib da openai só suporta 25mb, em video não é nada mas em áudio é MUITA coisa. E ainda da pra diminuir a qualidade do audio para ter mais espaço. E também acelera o upload.
     // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
     // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
+    const audioFile = await convertVideoToAudio(videoFile)
+    console.log(audioFile)
   }
 
   const previewUrl = useMemo(() => {
