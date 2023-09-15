@@ -1,3 +1,4 @@
+import { api } from "@/lib/axios";
 import { getFFmpeg } from "@/lib/ffmpeg";
 import { fetchFile } from '@ffmpeg/util';
 import { FileVideo, Upload } from "lucide-react";
@@ -77,7 +78,22 @@ export default function VideoInputForm() {
     // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
     // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
     const audioFile = await convertVideoToAudio(videoFile)
-    console.log(audioFile, prompt)
+
+    // é necessária a criação de um FormData pois é o formato que a api está esperando para fazer o upload
+    const data = new FormData()
+    data.append('file', audioFile)
+    
+    //upload do vídeo
+    const response = await api.post('videos/uploadVideo', data)
+
+    //transcrição do vídeo
+    const videoId = response.data.video.id
+
+    await api.post(`videos/${videoId}/transcription`, {
+      prompt,
+    })
+
+    console.log('Finished')
   }
 
   const previewUrl = useMemo(() => {
