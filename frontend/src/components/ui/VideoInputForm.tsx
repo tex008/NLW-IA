@@ -16,6 +16,14 @@ type Status =
   | "success"
   | "error";
 
+enum statusMessages  {
+  CONVERTING = "Convertendo...",
+  GENERATING = "Transcrevendo...",
+  UPLOADING = "Carregando...",
+  SUCCESS = "Sucesso!",
+  ERROR = "Algo deu Errado!"
+}
+
 export default function VideoInputForm() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("waiting");
@@ -77,10 +85,12 @@ export default function VideoInputForm() {
 
   async function handleUploadVideo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     const prompt = promptInputRef.current?.value;
 
     if (!videoFile) return;
+
+    // seta o status para converting
+    setStatus("converting");
 
     // converter o video em audio - a lib da openai só suporta 25mb, em video não é nada mas em áudio é MUITA coisa. E ainda da pra diminuir a qualidade do audio para ter mais espaço. E também acelera o upload.
     // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
@@ -91,17 +101,29 @@ export default function VideoInputForm() {
     const data = new FormData();
     data.append("file", audioFile);
 
+    //  seta o status para uploading
+    setStatus("uploading");
+
     //upload do vídeo
     const response = await api.post("videos/uploadVideo", data);
 
     //transcrição do vídeo
     const videoId = response.data.video.id;
 
-    await api.post(`videos/${videoId}/transcription`, {
-      prompt,
-    });
+    // seta o status para generating
+    setStatus("generating");
 
-    console.log("Finished");
+    try {
+      await api.post(`videos/${videoId}/transcription`, {
+      prompt,
+      });
+
+      // seta o estado para success
+      setStatus("success");
+    } catch (error) {
+      // seta o estado para error
+      setStatus("error");
+    }
   }
 
   const previewUrl = useMemo(() => {
@@ -143,15 +165,25 @@ export default function VideoInputForm() {
         <Label htmlFor="transcription_prompt">Prompt de transcrição</Label>
         <Textarea
           ref={promptInputRef}
+          disabled={status !== "waiting"}
           id="transcription_prompt"
           className="h-20 leading-relaxed resize-none"
           placeholder="Inclua palavras-chave mencionadoas no vídeo separadas por vírgula (,)"
         />
       </div>
 
-      <Button disabled={status === "waiting"} className="w-full">
-        Carregar vídeo
-        <Upload className="w-4 h-4 ml-2" />
+      <Button 
+        data-success={status === 'success'}
+        data-error={status === 'error'}
+        disabled={status !== "waiting"}
+        className="w-full data-[success=true]:bg-emerald-400 data-[error=true]:bg-red-500"
+        >
+        {status === "waiting" ? (
+          <>
+            Carregar vídeo
+            <Upload className="w-4 h-4 ml-2" />
+          </>
+        ) : statusMessages[status.toUpperCase() as keyof typeof statusMessages]}
       </Button>
     </form>
   );
