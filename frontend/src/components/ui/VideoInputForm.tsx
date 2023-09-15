@@ -77,7 +77,7 @@ export default function VideoInputForm() {
     // a conversão de video em audio ficará a cargo do navegador do usuário e não no backend. O que não acarreta em sobrecarga de processamento no back
     // o ffmpeg.wasm funciona bem só no chrome - no resto não funciona muito bem
     const audioFile = await convertVideoToAudio(videoFile)
-    console.log(audioFile)
+    console.log(audioFile, prompt)
   }
 
   const previewUrl = useMemo(() => {
