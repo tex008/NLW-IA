@@ -1,4 +1,4 @@
-import { useCompletion } from 'ai/react';
+import { useCompletion } from "ai/react";
 import { Github, Wand2 } from "lucide-react";
 import { useState } from "react";
 import { PromptSelect } from "./components/PromptSelect";
@@ -22,14 +22,21 @@ export default function App() {
 
   const {
     input,
-    setInput
+    setInput,
+    handleInputChange,
+    handleSubmit,
+    completion,
+    isLoading,
   } = useCompletion({
     api: "http://localhost:3333/ai/generate",
     body: {
       videoId,
       temperature,
     },
-  })
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
 
   return (
     <>
@@ -58,11 +65,13 @@ export default function App() {
                 className="p-4 leading-relaxed resize-none"
                 placeholder="Inclua o prompt para a IA..."
                 value={input}
+                onChange={handleInputChange}
               />
               <Textarea
                 className="p-4 leading-relaxed resize-none"
                 placeholder="Resultado gerado pela IA..."
                 readOnly
+                value={completion}
               />
             </div>
             <p className="text-sm text-muted-foreground">
@@ -77,7 +86,7 @@ export default function App() {
             <VideoInputForm onVideoUploaded={setVideoId} />
             <Separator />
 
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label>Prompt</Label>
                 <PromptSelect onPromptSelected={setInput} />
@@ -117,7 +126,11 @@ export default function App() {
 
               <Separator />
 
-              <Button type="submit" className="w-full">
+              <Button
+                disabled={isLoading === true}
+                type="submit"
+                className="w-full"
+              >
                 Executar
                 <Wand2 className="w-4 h-4 ml-2" />
               </Button>
