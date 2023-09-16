@@ -24,7 +24,11 @@ enum statusMessages {
   ERROR = "Algo deu Errado. Tente novamente!",
 }
 
-export default function VideoInputForm() {
+type VideoInputFormProps = {
+  onVideoUploaded: (videoId: string) => void;
+};
+
+export default function VideoInputForm(props: VideoInputFormProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("waiting");
   const promptInputRef = useRef<HTMLTextAreaElement>(null);
@@ -120,6 +124,7 @@ export default function VideoInputForm() {
 
       // seta o estado para success
       setStatus("success");
+      props.onVideoUploaded(videoId)
     } catch (error) {
       // seta o estado para error
       setStatus("error");

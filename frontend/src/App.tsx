@@ -16,7 +16,8 @@ import { Slider } from "./components/ui/slider";
 import { Textarea } from "./components/ui/textarea";
 
 export default function App() {
-  const [temperature, setTemperature] = useState<number>(0.5)
+  const [temperature, setTemperature] = useState<number>(0.5);
+  const [videoId, setVideoId] = useState<string | null>(null);
 
   function handlePromptSelected(template: string) {
     console.log(template);
@@ -64,13 +65,13 @@ export default function App() {
           </div>
 
           <aside className="space-y-6 w-80">
-            <VideoInputForm />
+            <VideoInputForm onVideoUploaded={setVideoId} />
             <Separator />
 
             <form className="space-y-6">
               <div className="space-y-2">
                 <Label>Prompt</Label>
-                <PromptSelect  onPromptSelected={handlePromptSelected}/>
+                <PromptSelect onPromptSelected={handlePromptSelected} />
               </div>
 
               <div className="space-y-2">
@@ -92,7 +93,7 @@ export default function App() {
 
               <div className="space-y-4">
                 <Label>Temperatura</Label>
-                <Slider 
+                <Slider
                   min={0}
                   max={1}
                   step={0.1}

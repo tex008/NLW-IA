@@ -8,32 +8,32 @@ import {
   SelectValue,
 } from "./ui/select";
 
-type Prompt =  {
+type Prompt = {
   id: string;
   title: string;
   template: string;
-}
+};
 
 type PromptSelectedProps = {
   onPromptSelected: (template: string) => void;
-}
+};
 
 export function PromptSelect(props: PromptSelectedProps) {
-  const [prompts, setPrompts] = useState<Prompt[] | null>(null)
+  const [prompts, setPrompts] = useState<Prompt[] | null>(null);
 
   useEffect(() => {
-    api.get('/prompts').then((response) => {
-      console.log(response.data)
-      setPrompts(response.data)
-    })
-  }, [])
+    api.get("/prompts").then((response) => {
+      console.log(response.data);
+      setPrompts(response.data);
+    });
+  }, []);
 
   function handlePromptSelected(promptId: string) {
-    const findPrompt = prompts?.find((prompt) => prompt.id === promptId)
+    const findPrompt = prompts?.find((prompt) => prompt.id === promptId);
 
-    if (!findPrompt) return
+    if (!findPrompt) return;
 
-    props.onPromptSelected(findPrompt.template)
+    props.onPromptSelected(findPrompt.template);
   }
 
   return (
