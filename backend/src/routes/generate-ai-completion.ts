@@ -37,9 +37,7 @@ export async function generateAiCompletionRoute(app: FastifyInstance) {
       messages: [{ role: "user", content: promptMessage }],
       stream: true
     });
-
-    console.log(response);
-
+    
     const stream = OpenAIStream(response);
 
     streamToResponse(stream, reply.raw, {
