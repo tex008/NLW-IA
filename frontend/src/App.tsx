@@ -1,3 +1,4 @@
+import { useCompletion } from 'ai/react';
 import { Github, Wand2 } from "lucide-react";
 import { useState } from "react";
 import { PromptSelect } from "./components/PromptSelect";
@@ -19,9 +20,16 @@ export default function App() {
   const [temperature, setTemperature] = useState<number>(0.5);
   const [videoId, setVideoId] = useState<string | null>(null);
 
-  function handlePromptSelected(template: string) {
-    console.log(template);
-  }
+  const {
+    input,
+    setInput
+  } = useCompletion({
+    api: "http://localhost:3333/ai/generate",
+    body: {
+      videoId,
+      temperature,
+    },
+  })
 
   return (
     <>
@@ -49,6 +57,7 @@ export default function App() {
               <Textarea
                 className="p-4 leading-relaxed resize-none"
                 placeholder="Inclua o prompt para a IA..."
+                value={input}
               />
               <Textarea
                 className="p-4 leading-relaxed resize-none"
@@ -71,7 +80,7 @@ export default function App() {
             <form className="space-y-6">
               <div className="space-y-2">
                 <Label>Prompt</Label>
-                <PromptSelect onPromptSelected={handlePromptSelected} />
+                <PromptSelect onPromptSelected={setInput} />
               </div>
 
               <div className="space-y-2">
