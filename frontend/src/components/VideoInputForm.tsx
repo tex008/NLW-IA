@@ -124,7 +124,7 @@ export default function VideoInputForm(props: VideoInputFormProps) {
 
       // seta o estado para success
       setStatus("success");
-      props.onVideoUploaded(videoId)
+      props.onVideoUploaded(videoId);
     } catch (error) {
       // seta o estado para error
       setStatus("error");
