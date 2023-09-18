@@ -51,10 +51,12 @@ export default function App() {
 
             <Separator className="h-6" orientation="vertical" />
 
-            <Button variant="outline">
-              <Github className="w-4 h-4 mr-2" />
-              Github
-            </Button>
+            <a href="https://github.com/tex008" target="_blank">
+              <Button variant="outline" onClick={() => console.log("testes")}>
+                <Github className="w-4 h-4 mr-2" />
+                Github
+              </Button>
+            </a>
           </div>
         </div>
 
